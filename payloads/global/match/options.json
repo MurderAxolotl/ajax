@@ -1,0 +1,5 @@
+{
+	"file": "game/options.rpy",
+	"searches": ["config.version"],
+	"replacements": ["%s"]
+}

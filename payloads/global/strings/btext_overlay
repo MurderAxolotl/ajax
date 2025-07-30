@@ -1,0 +1,3 @@
+init python:
+    print("This game was patched using Ajax, developed by MurderAxolotl (Theo)")
+    print("Game patches have been applied to extracted files, these changes are reversable")
