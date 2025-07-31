@@ -5,11 +5,13 @@ import sys
 
 from parasitic_lib import _log, _log_warn, _log_err
 
-PARASITIC_VERSION = "2.1"
+PARASITIC_VERSION = "2.3"
 
 # Constants
 RESOLUTION  = (1280, 720)
+DARK_FACTOR = 3
 WASH_COLOUR = (50, 50, 50)
+WASH_COLOUR_POPUP = (WASH_COLOUR[0]-WASH_COLOUR[0]/DARK_FACTOR, WASH_COLOUR[1]-WASH_COLOUR[1]/DARK_FACTOR, WASH_COLOUR[1]-WASH_COLOUR[1]/DARK_FACTOR)
 
 # Text colours
 TEXT_PRIMARY  = (255, 255, 255)
@@ -33,7 +35,6 @@ third_party_keybinds = []
 # Unofficial ones are listed separately
 plugins = {
 	"namefix":     False,
-	"pyshell":     False,
 	"pluglaunch": False
 }
 
@@ -47,14 +48,9 @@ def _check_for_supported_plugins(PATH:str):
 		keybinds.append("N - Run NameFix")
 		plugins.update(namefix=True)
 
-	# PyShell
-	if os.path.exists(f"{PATH}/game/plugins/pyshell.rpy"):
-		keybinds.append("P - Run PyShell")
-		plugins.update(pyshell=True)
-
 	# PluginLauncher
 	if os.path.exists(f"{PATH}/game/plugins/pluglaunch.rpy"):
-		keybinds.append("L - Run PlugLaunch")
+		keybinds.append("L - Run Plugin Launcher")
 		plugins.update(pluglaunch=True)
 
 	if os.path.exists(f"{PATH}/game/plugins/"):
@@ -67,6 +63,49 @@ def _check_for_supported_plugins(PATH:str):
 				if (k_1+(len(third_party_plugins)-1)) <= 58:
 					third_party_keybinds.append(str(k_1+(len(third_party_plugins)-1)))
 
+def _show_confirm_screen(screen, clock, basic_font) -> bool:
+	confirming = True
+
+	pup_width  = RESOLUTION[0]/2
+	pup_height = RESOLUTION[1]/2
+
+	center_x = RESOLUTION[0]/2
+	center_y = RESOLUTION[1]/2
+
+	while confirming:
+		screen.fill(pygame_sdl2.color.Color(WASH_COLOUR_POPUP))
+
+		bpc = pygame_sdl2.Rect(center_x-pup_width/2, center_y-pup_height/2, pup_width, pup_height)
+		popup_base = pygame_sdl2.draw.rect(screen, WASH_COLOUR, bpc)
+		header = basic_font.render("CONFIRM ACTION", True, TEXT_DISABLED)
+		body_1 = basic_font.render("The action you have requested can result in data loss!", True, TEXT_PRIMARY)
+		body_2 = basic_font.render("Ensure your game is saved BEFORE confirming!", True, TEXT_PRIMARY)
+		cfkey1 = basic_font.render("Press Y to confirm", True, TEXT_WARNING)
+		cfkey2 = basic_font.render("Press any other key to abort", True, TEXT_WARNING)
+
+		# screen.blit(popup_base, ())
+		screen.blit(header, (center_x - header.get_width()/2, (center_y - pup_height/2)+15))
+		screen.blit(body_1, (center_x - body_1.get_width()/2, (center_y - pup_height/2)+60))
+		screen.blit(body_2, (center_x - body_2.get_width()/2, (center_y - pup_height/2)+90))
+		screen.blit(cfkey1, (center_x - cfkey1.get_width()/2, (center_y - pup_height/2)+135))
+		screen.blit(cfkey2, (center_x - cfkey2.get_width()/2, (center_y - pup_height/2)+165))
+
+		pygame_sdl2.display.flip()
+		clock.tick(60)
+
+		for event in pygame_sdl2.event.get():
+			if event.type == pygame_sdl2.QUIT:
+				pygame_sdl2.quit()
+			elif event.type == pygame_sdl2.KEYDOWN:
+				key = event.key
+
+				if key == pygame_sdl2.K_y:
+					return True
+				else:
+					return False
+
+	return False
+
 def _payload(PATH:str, persistent_music:bool=True):
 	global keybinds, plugins, third_party_plugins
 
@@ -74,7 +113,11 @@ def _payload(PATH:str, persistent_music:bool=True):
 
 	GAME_NAME = PATH.split("/")[len(PATH.split("/"))-1]
 
-	FLAG_DEV = True if os.getenv("_parasitic_dev") == "1" else False
+	if os.getenv("_parasitic_dev") == "1":
+		FLAG_DEV = True
+
+	else:
+		FLAG_DEV = False
 
 	if FLAG_DEV: keybinds.append("\ - Update Parasitic")
 
@@ -89,10 +132,10 @@ def _payload(PATH:str, persistent_music:bool=True):
 	# pygame_sdl2.display.toggle_fullscreen()
 	clock  = pygame_sdl2.time.Clock()
 	total_audio_channels = pygame_sdl2.mixer.get_num_channels()
-	
+
 	try:
 		pygame_sdl2.mixer.music.load(f"{PATH}/_parasitic/menu.ogg")
-	
+
 	except FileNotFoundError:
 		_log_warn("Couldn't load menu.ogg")
 
@@ -137,12 +180,14 @@ def _payload(PATH:str, persistent_music:bool=True):
 					exit_code = 1
 
 				if key == pygame_sdl2.K_m:
-					running = False
-					exit_code = -1
+					if _show_confirm_screen(screen, clock, basic_font):
+						running = False
+						exit_code = -1
 
 				if key == pygame_sdl2.K_r:
-					running = False
-					exit_code = -2
+					if _show_confirm_screen(screen, clock, basic_font):
+						running = False
+						exit_code = -2
 
 				if key == pygame_sdl2.K_p:
 					running = False
@@ -168,20 +213,23 @@ def _payload(PATH:str, persistent_music:bool=True):
 							open(f"{PATH}/_parasitic/no_music", "x").close()
 						except:
 							NotImplemented
-				
+
 				if key == pygame_sdl2.K_BACKSLASH and FLAG_DEV:
 					import shutil
 
 					_magic_number_1 = os.getlogin()
 
-					for file in os.listdir(f"/home/{_magic_number_1}/Documents/Ajax12/payloads/parasitic/resources/interface"):
-						shutil.copyfile(f"/home/{_magic_number_1}/Documents/Ajax12/payloads/parasitic/resources/interface/{file}", f"{PATH}/game/")
+					for file in os.listdir(f"/home/{_magic_number_1}/Documents/Ajax12/parasitic/resources/interface"):
+						shutil.copyfile(f"/home/{_magic_number_1}/Documents/Ajax12/parasitic/resources/interface/{file}", f"{PATH}/game/{file}")
 
-					for file in os.listdir(f"/home/{_magic_number_1}/Documents/Ajax12/payloads/parasitic/resources/lib"):
-						shutil.copyfile(f"/home/{_magic_number_1}/Documents/Ajax12/payloads/parasitic/resources/lib/{file}", f"{PATH}/lib/python3.9/")
+					for file in os.listdir(f"/home/{_magic_number_1}/Documents/Ajax12/parasitic/resources/lib"):
+						shutil.copyfile(f"/home/{_magic_number_1}/Documents/Ajax12/parasitic/resources/lib/{file}", f"{PATH}/lib/python3.9/{file}")
 
 					running = False
-					exit_code = -1
+					exit_code = 2000
+
+					del shutil
+					del _magic_number_1
 
 				if str(key) in third_party_keybinds:
 					running = False
@@ -274,8 +322,8 @@ def _payload(PATH:str, persistent_music:bool=True):
 		clock.tick(60)
 
 	# Hand control back to the game
-	screen.fill(WASH_COLOUR)
-	return_text = basic_font.render("Returning control", True, TEXT_FPS)
+	screen.fill(WASH_COLOUR_POPUP)
+	return_text = basic_font.render("Waiting on RenPy...", True, TEXT_WARNING)
 	screen.blit(return_text, (5, 5))
 	pygame_sdl2.display.flip()
 
@@ -289,6 +337,7 @@ def _payload(PATH:str, persistent_music:bool=True):
 
 	except:
 		return 0
+
 
 ###################
 # AJAX EXIT CODES
@@ -306,3 +355,6 @@ def _payload(PATH:str, persistent_music:bool=True):
 # 1003 - UNDEFINED
 # 1004 - UNDEFINED
 # 1005 - UNDEFINED
+#
+# CUSTOM NOTIFICATION EXIT CODES
+# 2000 - "Parasitic GUI updated"

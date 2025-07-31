@@ -1,8 +1,16 @@
 label namefix:
-    python:
-        name = renpy.input("Ajax: Enter new name")
-        NAME = name.upper()
-        print("Ajax: Name changed!")
-        print("Ajax: Press shift+o, or type exit, to close the console")
-    "Ajax: Your name has been changed to [name]. This will only apply to future saves!"
-    "Ajax: Of note, rolling back to before this change will revert your name"
+    python hide:
+        renpy.store.name = renpy.input("NameFix: Enter new name")
+        renpy.store.NAME = name.upper()
+
+        # Test for `mc` and overwrite it if it's a string
+        try:
+           if isinstance(renpy.store.mc, str):
+              renpy.store.mc = name
+              renpy.store.MC = NAME
+        except:
+           NotImplemented
+        print("Name changed!")
+        print("Press shift+o, or type exit, to close the console")
+    $ renpy.block_rollback()
+    $ renpy.notify(f"     Name changed to {name}    ")

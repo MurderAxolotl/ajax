@@ -43,9 +43,9 @@ If, for some reason, Shift+A is non-functional, you can also do the following:
 
 Parasitic supports running custom .rpy scripts in-game. Place your .rpy file in the `plugins` folder in the game directory and Parasitic will pick up on it
 
-### Cool, how do I launch 3rd-party plugins?
+#### Cool, how do I launch 3rd-party plugins?
 
-The number keys (1-9) in Parasitic UI launch 3rd-party plugins. 
+The number keys (1-9) in Parasitic UI launch 3rd-party plugins.
 
 Alternatively, there is an official plugin to launch 3rd party plugins using a mouse. You can access it by pressing Shift + A and clicking `Plugins`
 
@@ -85,8 +85,47 @@ The file name is unimportant, Parasitic doesn't manage these at all.
 
 ***You should place startup plugins in the game's `startup` folder***
 
-## FINAL WARNINGS
+## WARNINGS - USERS
 
+#### Game Window
+
+The Parasitic GUI has to forcefully take control of the game window, which can result in funky behaviour, including:
+- Losing the maximize window control
+- Resizing to 1024x576
+- Being forced into windowed mode
+- Losing the ability to resize the window
+- Preferred window mode (fullscreen / windowed) being lost
+
+#### Rollback
+
+Due to the nature of RenPy, rollback (e.g. going backwards in the game) can accidentally re-run previous actions and break the game state. To prevent this, all official plugins and the Parasitic GUI will ***block rollback***
+
+#### Saving
+
+Always save before trying to launch Parasitic features! It can become impossible to save if a serious error occurs!
+
+The Parasitic GUI always saves the game state to a separate file when you open it. Should saving be broken after opening the GUI, open the console and run `call _run_last_snapshot`
+
+Please note that these snapshots are only created when opening the Parasitic GUI and official plugin launcher. No other entry points will create these snapshots!
+
+## WARNINGS - DEVELOPERS
+
+#### IMPORTANT PRACTICES
+
+Because of how RenPy handles saving the game, imported modules ***completely break save files*** in the normal store. To avoid this problem, all Python blocks should be `python hide:` instead of `python:`
+
+However, this also means you must use `renpy.store.variable` instead of `variable`. Example: `renpy.store.preferences.fullscreen` instead of `preferences.fullscreen`
+
+Additionally, ***any non-picklable objects*** will cause serious breakages with saving. You should avoid them where possible!
+
+Official plugin entrypoints will do their best to clean up after you, but Parasitic will only clear out:
+
+- Functions
+- Modules
+
+Other non-picklable ojects ***are not handled***
+
+#### Modified files
 There are a few files you should be careful with:
 - `00library.rpy`
 - `options.rpy`
@@ -95,3 +134,9 @@ There are a few files you should be careful with:
 These files are edited, either by global patches or Parasitic, and may not be exactly what you expect.
 
 ***Never*** blindly overwrite `00accessibility.rpy`! Not only does this make games less accessible, it also prevents the player from opening Parasitic!
+
+#### Imports
+
+Plugins SHOULD NOT `import parasitic` or `import parasitic_lib`! There are certain situations where these will not be available, and trying to import them will throw an exception.
+
+If you absolutely must import them, wrap the code in a `try/except` block. A plugin should always fail gracefully instead of making RenPy eat the error

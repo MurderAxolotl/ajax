@@ -8,6 +8,8 @@ import time
 PATH = sys.path[0]
 AJVX = "12.1"
 
+FLAG_DEV = True if os.getenv("_parasitic_dev") == "1" else False
+
 # COLOURS #
 BLUE = "\u001b[38;5;87m"
 DRIVES = "\u001b[1;38;5;202m"
@@ -24,7 +26,7 @@ KNOWN_BORKED_WITH_GLOBALS = ["raincheck"]
 def _inject(root:str):
 	""" Basic injection. No trailing slash """
 
-	print(YELLOW + "Injecting Ajax global modifications" + RESET)
+	print(YELLOW + "Applying global patches" + RESET)
 	print(YELLOW + "Target path: " + MAGENTA + root + RESET)
 
 	# Basic injection does the following things:
@@ -232,7 +234,14 @@ else:
 if inject_globals == "Yes":
 	_inject(game_root_directory)
 
-if questionary.select(message="Install official plugins?", choices=["Yes", "No"]).ask() == "Yes":
+if os.path.exists(f"{PATH}/parasitic"):
+	if questionary.select(message="Install Parasitic?", choices=["Yes", "No"]).ask() == "Yes":
+		from parasitic.parasitic_installer import _installScript
+
+		_installScript(PATH, game_root_directory)
+
+# if questionary.select(message="Install official plugins?", choices=["Yes", "No"]).ask() == "Yes":
+if True:
 	print(YELLOW + "Installing plugins..." + RESET)
 
 	try:
@@ -255,6 +264,15 @@ if questionary.select(message="Install official plugins?", choices=["Yes", "No"]
 		except Exception as err:
 			print(str(err))
 
+	if FLAG_DEV:
+		for dev_plugin in os.listdir(f"{PATH}/payloads/global/plugins_dev"):
+			try:
+				shutil.copy(f"{PATH}/payloads/global/plugins_dev/{dev_plugin}", f"{game_root_directory}/game/plugins/")
+				print(MAGENTA + "Plugin installed: dev/" + dev_plugin + RESET)
+
+			except Exception as err:
+				print(str(err))
+
 	for script in os.listdir(f"{PATH}/payloads/global/plugins"):
 		try:
 			shutil.copy(f"{PATH}/payloads/global/plugins/{script}", f"{game_root_directory}/game/plugins/")
@@ -265,12 +283,6 @@ if questionary.select(message="Install official plugins?", choices=["Yes", "No"]
 
 		except Exception:
 			print(RED + "Plugin not installed: " + MAGENTA + script + RESET)
-
-if os.path.exists(f"{PATH}/parasitic"):
-	if questionary.select(message="Install Parasitic?", choices=["Yes", "No"]).ask() == "Yes":
-		from parasitic.parasitic_installer import _installScript
-
-		_installScript(PATH, game_root_directory)
 
 _game_list.append("Exit Injector")
 
@@ -297,8 +309,6 @@ while True:
 	_patch = _patch.split(".")[0]
 
 	if os.path.exists(game_root_directory):
-		# todo: shit to select what patch to run
-		# This code assumes a patch has been chosen
 		exec(compile(f"import payloads.{_game}.strings.{_patch} as script", "DynamicallyLoadedScript", "exec"))
 
 		try:
@@ -310,4 +320,3 @@ while True:
 
 	else:
 		print(RED + "Path does not exist!" + RESET)
-		time.sleep(5)
