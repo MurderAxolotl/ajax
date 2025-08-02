@@ -5,7 +5,7 @@ import sys
 
 from parasitic_lib import _log, _log_warn, _log_err
 
-PARASITIC_VERSION = "2.3"
+PARASITIC_VERSION = "2.4"
 
 # Constants
 RESOLUTION  = (1280, 720)
@@ -106,7 +106,7 @@ def _show_confirm_screen(screen, clock, basic_font) -> bool:
 
 	return False
 
-def _payload(PATH:str, persistent_music:bool=True):
+def _payload(PATH:str, persistent_music:bool=True) -> int|tuple[int,str]:
 	global keybinds, plugins, third_party_plugins
 
 	_check_for_supported_plugins(PATH)
@@ -119,7 +119,8 @@ def _payload(PATH:str, persistent_music:bool=True):
 	else:
 		FLAG_DEV = False
 
-	if FLAG_DEV: keybinds.append("\ - Update Parasitic")
+	if FLAG_DEV:
+		keybinds.append("\ - Update Parasitic")
 
 	# The actual payload
 	pygame_sdl2.init()
@@ -189,10 +190,6 @@ def _payload(PATH:str, persistent_music:bool=True):
 						running = False
 						exit_code = -2
 
-				if key == pygame_sdl2.K_p:
-					running = False
-					exit_code = 2
-
 				if key == pygame_sdl2.K_l:
 					running = False
 					exit_code = 3
@@ -233,7 +230,7 @@ def _payload(PATH:str, persistent_music:bool=True):
 
 				if str(key) in third_party_keybinds:
 					running = False
-					exit_code:tuple[int, str] = (1000, third_party_plugins[third_party_keybinds.index(str(key))].split(".")[0])
+					exit_code = (1000, third_party_plugins[third_party_keybinds.index(str(key))].split(".")[0])
 
 
 		# Clear the screen
@@ -271,7 +268,7 @@ def _payload(PATH:str, persistent_music:bool=True):
 		# pgin_resHeight = (RESOLUTION[1]/2) - (29*(len(plugins)+1))
 		pgin_resHeight = menu_initial_build_height
 		display_elements.append((
-			basic_font.render(f"Official Plugins:", True, TEXT_PRIMARY),
+			basic_font.render("Official Plugins:", True, TEXT_PRIMARY),
 			(RESOLUTION[0]/3, pgin_resHeight)
 		))
 		pgin_resHeight += 29
@@ -279,7 +276,7 @@ def _payload(PATH:str, persistent_music:bool=True):
 		for keybind in plugins.keys():
 			state = plugins[keybind]
 
-			if state == True:
+			if state:
 				color = TEXT_ENABLED
 				state_text = "INSTALLED"
 			else:
@@ -297,7 +294,7 @@ def _payload(PATH:str, persistent_music:bool=True):
 			trdpgin_resHeight = menu_initial_build_height
 			trdpgin_cnt = 1
 			display_elements.append((
-				basic_font.render(f"Third-Party Plugins:", True, TEXT_PRIMARY),
+				basic_font.render("Third-Party Plugins:", True, TEXT_PRIMARY),
 				(RESOLUTION[0]/2+125, trdpgin_resHeight)
 			))
 			trdpgin_resHeight += 29
@@ -323,8 +320,8 @@ def _payload(PATH:str, persistent_music:bool=True):
 
 	# Hand control back to the game
 	screen.fill(WASH_COLOUR_POPUP)
-	return_text = basic_font.render("Waiting on RenPy...", True, TEXT_WARNING)
-	screen.blit(return_text, (5, 5))
+	screen.blit(basic_font.render("Waiting on RenPy...", True, TEXT_WARNING), (5, 5))
+	screen.blit(basic_font.render("If you're here for a while, RenPy has frozen. Shift+R might fix the issue", True, TEXT_FPS), (5, 40))
 	pygame_sdl2.display.flip()
 
 	pygame_sdl2.mixer.music.stop()
@@ -335,7 +332,7 @@ def _payload(PATH:str, persistent_music:bool=True):
 	try:
 		return exit_code
 
-	except:
+	except Exception:
 		return 0
 
 
@@ -344,8 +341,8 @@ def _payload(PATH:str, persistent_music:bool=True):
 #-2 - FORCEFULLY START A NEW GAME
 #-1 - FORCEFULLY RETURN TO MENU (INDUCE FULL RENPY RELOAD)
 # 0 - TAKE NO ACTION
-# 1 - CALL NAMEFIXER
-# 2 - CALL PYSHELL
+# 1 - CALL NAMEFIX
+# 2 - UNDEFINED
 # 3 - CALL PLUGLAUNCH
 #
 # RENPY EXIT CODES

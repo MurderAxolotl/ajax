@@ -72,9 +72,6 @@ label _parasitic_menu:
     elif ec == 1:
        renpy.call("namefix")
 
-    elif ec == 2:
-       renpy.call("pyshell")
-
     elif ec == 3:
        renpy.call("pluglaunch")
 

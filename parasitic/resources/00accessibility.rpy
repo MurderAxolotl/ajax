@@ -118,8 +118,8 @@ screen _accessibility():
     frame:
         style_group ""
         alt _("Accessibility Menu. Use up and down arrows to navigate, and enter to activate buttons and bars.")
-        
-        
+
+
 
         has side "c b":
             spacing gui._scale(10)
@@ -242,11 +242,15 @@ screen _accessibility():
                 textbutton _("Return"):
                     action Hide("_accessibility")
                     yalign 1.0
-                    
+
                 textbutton _("Parasitic"):
                     action Hide("_accessibility"), Call("_parasitic_menu")
                     yalign 1.0
 
                 textbutton _("Plugins"):
                     action Hide("_accessibility"), Call("_parasitic_handToPlugLaunch")
+                    yalign 1.0
+
+                textbutton _("Cleanup"):
+                    action Hide("_accessibility"), Call("clean_namespace")
                     yalign 1.0

@@ -34,3 +34,5 @@ label clean_namespace:
              NotImplemented
      except:
       NotImplemented
+
+    renpy.notify("     Namespace cleaned up     ")

@@ -60,9 +60,9 @@ def _installScript(PATH:str, ROOT:str):
 			_log("Made resources folder")
 
 		except FileExistsError:
-			_log("Resources folder already exists")
+			NotImplemented
 
-		except Exception as err:
+		except Exception:
 			_warn("Couldn't make resources folder")
 
 		try:
@@ -71,24 +71,27 @@ def _installScript(PATH:str, ROOT:str):
 					shutil.copy(f"{PATH}/parasitic/lib/pygame_sdl2/{libfile}", f"{ROOT}/lib/python3.9/pygame_sdl2/")
 					_log(f"Installed shared library {FILENAME}{libfile}{RESET}")
 
-				except Exception as err:
-					_warn(f"Failed to install {FILENAME}{libfile}{RESET}:{RED} " + str(err) + RESET)
+				except Exception:
+					if "No such file or directory" in str(err) and "python3.9/pygame_sdl2/" in str(err):
+						_warn(f"Failed to install {FILENAME}{libfile}{RESET}")
+					else:
+						_warn(f"Failed to install {FILENAME}{libfile}{RESET}:{RED} " + str(err) + RESET)
 
-		except Exception as err:
+		except Exception:
 			_warn("")
 
 		try:
 			shutil.copy(f"{PATH}/parasitic/resources/lib/parasitic.py", f"{ROOT}/lib/python3.9/")
 			_log("Installed ParasiticGUI")
 
-		except Exception as err:
+		except Exception:
 			_warn("Failed to install ParasiticGUI")
 
 		try:
 			shutil.copy(f"{PATH}/parasitic/resources/lib/parasitic_lib.py", f"{ROOT}/lib/python3.9/")
 			_log("Installed Parsitic shared library")
 
-		except Exception as err:
+		except Exception:
 			_warn("Failed to install Parasitic shared library")
 
 		for interface in os.listdir(f"{PATH}/parasitic/resources/interface"):
@@ -96,28 +99,28 @@ def _installScript(PATH:str, ROOT:str):
 				shutil.copy(f"{PATH}/parasitic/resources/interface/{interface}", f"{ROOT}/game/")
 				_log(f"Installed interface {FILENAME}{interface}{RESET}")
 
-			except Exception as err:
+			except Exception:
 				_warn(f"Failed to install interface {FILENAME}{interface}{RESET}")
 
 		try:
 			shutil.copy(f"{PATH}/parasitic/resources/BitcountPropSingle.ttf", f"{ROOT}/_parasitic/")
-			_log(f"Copied fonts")
+			_log("Copied fonts")
 
-		except Exception as err:
-			_warn(f"Failed to copy fonts")
+		except Exception:
+			_warn("Failed to copy fonts")
 
 		try:
 			shutil.copy(f"{PATH}/parasitic/resources/menu.ogg", f"{ROOT}/_parasitic/")
 			_log("Copied GUI music")
 
-		except Exception as err:
-			_warn(f"Failed to copy GUI music")
+		except Exception:
+			_warn("Failed to copy GUI music")
 
 		try:
 			shutil.copy(f"{PATH}/parasitic/resources/00accessibility.rpy", f"{ROOT}/renpy/common/")
 			_log("Hooked 00accessibility.rpy")
 
-		except Exception as err:
+		except Exception:
 			_warn("Failed to hook 00accessibility.rpy")
 
 		try:
@@ -127,7 +130,5 @@ def _installScript(PATH:str, ROOT:str):
 		except FileNotFoundError:
 			NotImplemented #type:ignore
 
-		except Exception as err:
+		except Exception:
 			_warn("Failed to clear cached 00accessibility.rpy")
-
-		print("Installer finished")

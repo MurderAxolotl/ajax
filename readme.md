@@ -1,4 +1,4 @@
-A project to allow injecting code and other things into RenPy games fairly easily
+A project to allow injecting code and other things into RenPy games (somewhat) easily
 
 ## About Repository
 
@@ -12,15 +12,18 @@ Parasitic plugins are dynamic and can be run at any time in-game. Parasitic has 
 
 ## Install and use
 
-First, make sure you install questionary with `pip install questionary`
+Make sure you have the following Python modules installed:
+- questionary (`pip install questionary`)
+
+Then, make sure you have the following system packages installed:
+- Python 3 (3.10 minimum, 3.12 recommended)
+- git
 
 Then, you can run these commands to clone and run the code:
 
 ```
 git clone git@github.com:psychon-night/ajax12.git
-
 cd ajax12
-
 python main.py
 ```
 
@@ -33,11 +36,14 @@ All Parasitic features can be accessed by pressing Shift+A. Along the bottom of 
 - `Return` - Closes the accessibility menu
 - `Parasitic` - Launches the Parasitic UI
 - `Plugins` - Opens the plugin launcher, assuming `plugins/pluglaunch.rpy` is installed
+- `Cleanup` - Tries to fix in-memory issues to fix saving. See the warnings for users
 
 If, for some reason, Shift+A is non-functional, you can also do the following:
 
 1. Press Shift+O (that's o as in orange)
 2. Type `call _parasitic_menu` and hit enter
+
+This will open the full Parasitic GUI, from which you can access all available features
 
 ## Plugins in Parasitic
 
@@ -104,7 +110,11 @@ Due to the nature of RenPy, rollback (e.g. going backwards in the game) can acci
 
 Always save before trying to launch Parasitic features! It can become impossible to save if a serious error occurs!
 
-The Parasitic GUI always saves the game state to a separate file when you open it. Should saving be broken after opening the GUI, open the console and run `call _run_last_snapshot`
+##### What do I do when saving breaks??
+
+First, you should try the "Cleanup" button (available when you press Shift+A). This will try to clean up any issues left behind. Afterwards, try to save!
+
+The Parasitic GUI always saves the game state to a separate file when you open it. Should saving still be broken, open the console and run `call _run_last_snapshot`
 
 Please note that these snapshots are only created when opening the Parasitic GUI and official plugin launcher. No other entry points will create these snapshots!
 
