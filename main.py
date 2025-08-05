@@ -5,6 +5,8 @@ import questionary
 import json
 import time
 
+import json_patches
+
 PATH = sys.path[0]
 AJVX = "12.1"
 
@@ -317,17 +319,21 @@ while True:
 	if _patch == "Exit Injector":
 		sys.exit(0)
 
-	_patch = _patch.split(".")[0]
-
-	if os.path.exists(game_root_directory):
-		exec(compile(f"import payloads.{_game}.strings.{_patch} as script", "DynamicallyLoadedScript", "exec"))
-
-		try:
-			script._runPatch(game_root_directory)
-		except Exception as err:
-			print(RED + "Patch failed: " + str(err) + RESET)
-
-		print(YELLOW + "Patch finished, no errors were returned" + RESET)
+	if ".json" in _patch:
+		json_patches.apply_json_patch(game_root_directory, PATH, _patch, f"{PATH}/payloads/{_game}/strings/{_patch}")
 
 	else:
-		print(RED + "Path does not exist!" + RESET)
+		_patch = _patch.split(".")[0]
+
+		if os.path.exists(game_root_directory):
+			exec(compile(f"import payloads.{_game}.strings.{_patch} as script", "DynamicallyLoadedScript", "exec"))
+
+			try:
+				script._runPatch(game_root_directory)
+			except Exception as err:
+				print(RED + "Patch failed: " + str(err) + RESET)
+
+			print(YELLOW + "Patch finished, no errors were returned" + RESET)
+
+		else:
+			print(RED + "Path does not exist!" + RESET)

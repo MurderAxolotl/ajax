@@ -1,0 +1,16 @@
+{
+	"patchName": "Example JSON Patch Rules",
+	"patchAuth": "MurderAxolotl",
+	"patchDesc": "An example of JSON-based file replacements",
+
+	"rules": [
+		{
+			"file": "script.rpy",
+			"ruleName": "Miku is more important",
+			"ruleType": "REPLACE",
+			"search": "I have very important things to say",
+			"replace": "Miku Miku Beam!!",
+			"insert": "Unused in this patch, but yk"
+		}
+	]
+}
