@@ -37,24 +37,30 @@ def _err(text:str):
 
 def _installScript(PATH:str, ROOT:str):
 	if os.path.exists(f"{ROOT}/lib/python3.9"):
-		compatible = True
+		detected_lib_version = "python3.9"
+
+		_log(f"Installing Parasitic to {FILENAME}{ROOT}{RESET}")
+
+	elif os.path.exists(f"{ROOT}/lib/python3.12"):
+		detected_lib_version = "python3.12"
 
 		_log(f"Installing Parasitic to {FILENAME}{ROOT}{RESET}")
 
 	else:
-		compatible = False
+		detected_lib_version = 0
 		_err("This game is not compatible with Parasitic")
-		_err("Reason: does not use Python 3.9 -- probably an old RenPy game")
+		_err("Reason: does not use a supported version of Python (not 3.9 or 3.12) -- probably an old RenPy game")
 
 		force_anyways = questionary.select("How should we proceed?", choices=["Install anyways", "Abort"]).ask()
 
 		if force_anyways == "Install anyways":
-			compatible = True
+			detected_lib_version = "python3.9"
 
 			_warn("Forcing install on incompatible game!")
 			_warn("Even if the install succeeds, Parasitic will most likely not work!")
 
-	if compatible:
+	if detected_lib_version != 0:
+		print(f"{YELLOW}Will use libs for {PURPLE}{detected_lib_version}{RESET}")
 		try:
 			os.mkdir(f"{ROOT}/_parasitic")
 			_log("Made resources folder")
@@ -68,11 +74,11 @@ def _installScript(PATH:str, ROOT:str):
 		try:
 			for libfile in MIN_LIBS:
 				try:
-					shutil.copy(f"{PATH}/parasitic/lib/pygame_sdl2/{libfile}", f"{ROOT}/lib/python3.9/pygame_sdl2/")
+					shutil.copy(f"{PATH}/parasitic/lib/{detected_lib_version}/pygame_sdl2/{libfile}", f"{ROOT}/lib/{detected_lib_version}/pygame_sdl2/")
 					_log(f"Installed shared library {FILENAME}{libfile}{RESET}")
 
-				except Exception:
-					if "No such file or directory" in str(err) and "python3.9/pygame_sdl2/" in str(err):
+				except Exception as err:
+					if "No such file or directory" in str(err) and f"{detected_lib_version}/pygame_sdl2/" in str(err):
 						_warn(f"Failed to install {FILENAME}{libfile}{RESET}")
 					else:
 						_warn(f"Failed to install {FILENAME}{libfile}{RESET}:{RED} " + str(err) + RESET)
@@ -81,14 +87,14 @@ def _installScript(PATH:str, ROOT:str):
 			_warn("")
 
 		try:
-			shutil.copy(f"{PATH}/parasitic/resources/lib/parasitic.py", f"{ROOT}/lib/python3.9/")
+			shutil.copy(f"{PATH}/parasitic/resources/lib/parasitic.py", f"{ROOT}/lib/{detected_lib_version}/")
 			_log("Installed ParasiticGUI")
 
 		except Exception:
 			_warn("Failed to install ParasiticGUI")
 
 		try:
-			shutil.copy(f"{PATH}/parasitic/resources/lib/parasitic_lib.py", f"{ROOT}/lib/python3.9/")
+			shutil.copy(f"{PATH}/parasitic/resources/lib/parasitic_lib.py", f"{ROOT}/lib/{detected_lib_version}/")
 			_log("Installed Parsitic shared library")
 
 		except Exception:
@@ -124,6 +130,31 @@ def _installScript(PATH:str, ROOT:str):
 			_warn("Failed to hook 00accessibility.rpy")
 
 		try:
+			ZZKM_SEARCH = "director = director.Start(),"
+			ZZKM_REPLAC = 'director = renpy.curried_call_in_new_context("_parasitic_menu"),'
+
+			ZZKM_SEARCH_2 = "director = [ 'noshift_K_d' ]"
+			ZZKM_REPLAC_2 = "director = [ 'K_F5' ]"
+
+			# Hatsune Miku?!
+			with open(f"{ROOT}/renpy/common/00keymap.rpy", "r") as rin:
+				zzkm_read = rin.read()
+
+			zzkm_patched = zzkm_read.replace(ZZKM_SEARCH, ZZKM_REPLAC).replace(ZZKM_SEARCH_2, ZZKM_REPLAC_2)
+
+			with open(f"{ROOT}/renpy/common/00keymap.rpy", "w") as len:
+				len.truncate(0)
+				len.seek(0)
+
+				len.write(zzkm_patched)
+				len.flush()
+
+			_log("Hooked 00keymap.rpy")
+
+		except Exception:
+			_warn("Failed to hook 00keymap.rpy")
+
+		try:
 			os.remove(f"{ROOT}/renpy/common/00accessibility.rpyc")
 			_log("Cleared cached 00accessibility.rpy")
 
@@ -132,3 +163,13 @@ def _installScript(PATH:str, ROOT:str):
 
 		except Exception:
 			_warn("Failed to clear cached 00accessibility.rpy")
+
+		try:
+			os.remove(f"{ROOT}/renpy/common/00keymap.rpyc")
+			_log("Cleared cached 00keymap.rpy")
+
+		except FileNotFoundError:
+			NotImplemented #type:ignore
+
+		except Exception:
+			_warn("Failed to clear cached 00keymap.rpy")

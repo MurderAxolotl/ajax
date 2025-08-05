@@ -106,7 +106,7 @@ def _show_confirm_screen(screen, clock, basic_font) -> bool:
 
 	return False
 
-def _payload(PATH:str, persistent_music:bool=True) -> int|tuple[int,str]:
+def _payload(PATH:str, persistent_music:bool=True):
 	global keybinds, plugins, third_party_plugins
 
 	_check_for_supported_plugins(PATH)

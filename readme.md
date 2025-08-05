@@ -38,7 +38,9 @@ All Parasitic features can be accessed by pressing Shift+A. Along the bottom of 
 - `Plugins` - Opens the plugin launcher, assuming `plugins/pluglaunch.rpy` is installed
 - `Cleanup` - Tries to fix in-memory issues to fix saving. See the warnings for users
 
-If, for some reason, Shift+A is non-functional, you can also do the following:
+If you want to directly launch the Parasitic GUI, press F5
+
+If, for some reason, Shift+A and F5 are non-functional, you can also do the following:
 
 1. Press Shift+O (that's o as in orange)
 2. Type `call _parasitic_menu` and hit enter
@@ -51,9 +53,17 @@ Parasitic supports running custom .rpy scripts in-game. Place your .rpy file in 
 
 #### Cool, how do I launch 3rd-party plugins?
 
-The number keys (1-9) in Parasitic UI launch 3rd-party plugins.
+The number keys (1-9) in the Parasitic GUI launch 3rd-party plugins.
 
 Alternatively, there is an official plugin to launch 3rd party plugins using a mouse. You can access it by pressing Shift + A and clicking `Plugins`
+
+## Supported Games
+
+Any modern RenPy game should be supported. However, some older VNs are NOT supported. Generally:
+-  Games using RenPy 8 are supported
+-  Games using RenPy 7 and older are NOT supported
+
+The Parasitic installer will check for compatibility before installation and warn you of any issues
 
 ## File Structure
 
@@ -140,6 +150,7 @@ There are a few files you should be careful with:
 - `00library.rpy`
 - `options.rpy`
 - `00accessibility.rpy`
+- `00keymap.rpy`
 
 These files are edited, either by global patches or Parasitic, and may not be exactly what you expect.
 
@@ -150,3 +161,11 @@ These files are edited, either by global patches or Parasitic, and may not be ex
 Plugins SHOULD NOT `import parasitic` or `import parasitic_lib`! There are certain situations where these will not be available, and trying to import them will throw an exception.
 
 If you absolutely must import them, wrap the code in a `try/except` block. A plugin should always fail gracefully instead of making RenPy eat the error
+
+## ATTRIBUTIONS
+
+This repository ships code from other places, namely:
+
+- Modified files from the RenPy Engine: https://github.com/renpy/renpy
+- Compiled dynamic libraries from PygameSDL2: https://github.com/renpy/pygame_sdl2
+- UnRPYC: https://github.com/CensoredUsername/unrpyc

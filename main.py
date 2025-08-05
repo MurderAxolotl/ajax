@@ -26,6 +26,10 @@ KNOWN_BORKED_WITH_GLOBALS = ["raincheck"]
 def _inject(root:str):
 	""" Basic injection. No trailing slash """
 
+	if os.path.exists(f"{root}/.jxGlobals"):
+		print(RED + "Global patches have already been applied. Stop." + RESET)
+		return
+
 	print(YELLOW + "Applying global patches" + RESET)
 	print(YELLOW + "Target path: " + MAGENTA + root + RESET)
 
@@ -150,6 +154,10 @@ def _inject(root:str):
 		rwfile.truncate(0)
 		rwfile.write(working)
 
+	with open(f"{root}/.jxGlobals", "x") as jxGlobals:
+		jxGlobals.write("Miku Miku BEAAAAAAAAAAAAAAAAAAAAAM-")
+		jxGlobals.flush()
+
 def _create_backup(game_root:str):
 	if not os.path.exists(f"{PATH}/backups"):
 		os.mkdir(f"{PATH}/backups")
@@ -232,7 +240,10 @@ else:
 	inject_globals = "No"
 
 if inject_globals == "Yes":
-	_inject(game_root_directory)
+	try:
+		_inject(game_root_directory)
+	except Exception as err:
+		print(RED + "Failed to inject global patches: " + str(err) + RESET)
 
 if os.path.exists(f"{PATH}/parasitic"):
 	if questionary.select(message="Install Parasitic?", choices=["Yes", "No"]).ask() == "Yes":
