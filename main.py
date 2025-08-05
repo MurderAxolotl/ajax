@@ -249,53 +249,50 @@ if inject_globals == "Yes":
 
 if os.path.exists(f"{PATH}/parasitic"):
 	if questionary.select(message="Install Parasitic?", choices=["Yes", "No"]).ask() == "Yes":
-		from parasitic.parasitic_installer import _installScript
-
-		_installScript(PATH, game_root_directory)
-
-# if questionary.select(message="Install official plugins?", choices=["Yes", "No"]).ask() == "Yes":
-if True:
-	print(YELLOW + "Installing plugins..." + RESET)
-
-	try:
-		os.mkdir(f"{game_root_directory}/game/plugins/")
-
-	except Exception as err:
-		NotImplemented
-
-	try:
-		os.mkdir(f"{game_root_directory}/game/startup")
-
-	except:
-		NotImplemented
-
-	for startup_plugin in os.listdir(f"{PATH}/payloads/global/plugins_startup"):
 		try:
-			shutil.copy(f"{PATH}/payloads/global/plugins_startup/{startup_plugin}", f"{game_root_directory}/game/startup/")
-			print(SPECIALDRIVE + "Plugin installed: " + MAGENTA + "startup/" + startup_plugin + RESET)
+			os.mkdir(f"{game_root_directory}/game/plugins/")
 
 		except Exception as err:
-			print(str(err))
+			NotImplemented
 
-	if FLAG_DEV:
-		for dev_plugin in os.listdir(f"{PATH}/payloads/global/plugins_dev"):
+		try:
+			os.mkdir(f"{game_root_directory}/game/startup")
+
+		except:
+			NotImplemented
+
+		for startup_plugin in os.listdir(f"{PATH}/payloads/global/plugins_startup"):
 			try:
-				shutil.copy(f"{PATH}/payloads/global/plugins_dev/{dev_plugin}", f"{game_root_directory}/game/plugins/")
-				print(MAGENTA + "Plugin installed: dev/" + dev_plugin + RESET)
+				shutil.copy(f"{PATH}/payloads/global/plugins_startup/{startup_plugin}", f"{game_root_directory}/game/startup/")
+				print(SPECIALDRIVE + "Plugin installed: " + MAGENTA + "startup/" + startup_plugin + RESET)
 
 			except Exception as err:
 				print(str(err))
 
-	for script in os.listdir(f"{PATH}/payloads/global/plugins"):
-		try:
-			shutil.copy(f"{PATH}/payloads/global/plugins/{script}", f"{game_root_directory}/game/plugins/")
-			print(SPECIALDRIVE + "Plugin installed: " + MAGENTA + script + RESET)
+		if FLAG_DEV:
+			for dev_plugin in os.listdir(f"{PATH}/payloads/global/plugins_dev"):
+				try:
+					shutil.copy(f"{PATH}/payloads/global/plugins_dev/{dev_plugin}", f"{game_root_directory}/game/plugins/")
+					print(MAGENTA + "Plugin installed: dev/" + dev_plugin + RESET)
 
-		except FileExistsError:
-			print(YELLOW + "Plugin already installed: " + MAGENTA + script + RESET)
+				except Exception as err:
+					print(str(err))
 
-		except Exception:
-			print(RED + "Plugin not installed: " + MAGENTA + script + RESET)
+		for script in os.listdir(f"{PATH}/payloads/global/plugins"):
+			try:
+				shutil.copy(f"{PATH}/payloads/global/plugins/{script}", f"{game_root_directory}/game/plugins/")
+				print(SPECIALDRIVE + "Plugin installed: " + MAGENTA + script + RESET)
+
+			except FileExistsError:
+				print(YELLOW + "Plugin already installed: " + MAGENTA + script + RESET)
+
+			except Exception:
+				print(RED + "Plugin not installed: " + MAGENTA + script + RESET)
+
+		from parasitic.parasitic_installer import _installScript
+
+		_installScript(PATH, game_root_directory)
+
 
 _game_list.append("Exit Injector")
 

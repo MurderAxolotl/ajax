@@ -48,14 +48,18 @@ def apply_json_patch(game_root:str, PATH:str, patch_name:str, patch_file:str):
 					with open(f"{game_root}/game/{rule_file}", "r") as rf_read:
 						fileText = rf_read.read()
 
-					pf_patched = fileText.replace(search, replace)
+					if search in fileText:
+						pf_patched = fileText.replace(search, replace)
 
-					with open(f"{game_root}/game/{rule_file}", "w") as rf_write:
-						rf_write.truncate(0)
-						rf_write.seek(0)
+						with open(f"{game_root}/game/{rule_file}", "w") as rf_write:
+							rf_write.truncate(0)
+							rf_write.seek(0)
 
-						rf_write.write(pf_patched)
-						rf_write.flush()
+							rf_write.write(pf_patched)
+							rf_write.flush()
+
+					else:
+						print(YELLOW + f"{YELLOW}Rule {MAGENTA}{rule_name}{YELLOW} has no matches!")
 
 				except FileNotFoundError:
 					print(f"{RED}Failed to apply rule {MAGENTA}{rule_name}{RED}: File not found{RESET}")
@@ -74,14 +78,18 @@ def apply_json_patch(game_root:str, PATH:str, patch_name:str, patch_file:str):
 					with open(f"{game_root}/game/{rule_file}", "r") as rf_read:
 						fileText = rf_read.read()
 
-					pf_patched = fileText.replace(search, pf_patch_text)
+					if search in fileText:
+						pf_patched = fileText.replace(search, pf_patch_text)
 
-					with open(f"{game_root}/game/{rule_file}", "w") as rf_write:
-						rf_write.truncate(0)
-						rf_write.seek(0)
+						with open(f"{game_root}/game/{rule_file}", "w") as rf_write:
+							rf_write.truncate(0)
+							rf_write.seek(0)
 
-						rf_write.write(pf_patched)
-						rf_write.flush()
+							rf_write.write(pf_patched)
+							rf_write.flush()
+
+					else:
+						print(YELLOW + f"{YELLOW}Rule {MAGENTA}{rule_name}{YELLOW} has no matches!")
 
 				except FileNotFoundError:
 					print(f"{RED}Failed to apply rule {MAGENTA}{rule_name}{RED}: File not found{RESET}")
@@ -100,14 +108,18 @@ def apply_json_patch(game_root:str, PATH:str, patch_name:str, patch_file:str):
 					with open(f"{game_root}/game/{rule_file}", "r") as rf_read:
 						fileText = rf_read.read()
 
-					pf_patched = fileText.replace(search, pf_patch_text)
+					if search in fileText:
+						pf_patched = fileText.replace(search, pf_patch_text)
 
-					with open(f"{game_root}/game/{rule_file}", "w") as rf_write:
-						rf_write.truncate(0)
-						rf_write.seek(0)
+						with open(f"{game_root}/game/{rule_file}", "w") as rf_write:
+							rf_write.truncate(0)
+							rf_write.seek(0)
 
-						rf_write.write(pf_patched)
-						rf_write.flush()
+							rf_write.write(pf_patched)
+							rf_write.flush()
+
+					else:
+						print(YELLOW + f"{YELLOW}Rule {MAGENTA}{rule_name}{YELLOW} has no matches!")
 
 				except FileNotFoundError:
 					print(f"{RED}Failed to apply rule {MAGENTA}{rule_name}{RED}: File not found{RESET}")
