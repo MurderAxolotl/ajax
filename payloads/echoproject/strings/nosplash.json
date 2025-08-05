@@ -2,6 +2,7 @@
 	"patchName": "Remove Splash Screen",
 	"patchAuth": "MurderAxolotl",
 	"patchDesc": "Remove the splash screen from games using label splashscreen:",
+	"needsGlbs": true,
 
 	"rules": [
 		{

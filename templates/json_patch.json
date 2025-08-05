@@ -2,6 +2,7 @@
 	"patchName": "Example JSON Patch Rules",
 	"patchAuth": "MurderAxolotl",
 	"patchDesc": "An example of JSON-based file replacements",
+	"needsGlbs": true,
 
 	"rules": [
 		{

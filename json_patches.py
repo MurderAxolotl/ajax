@@ -1,4 +1,6 @@
 import json
+import os
+import questionary
 
 # COLOURS #
 BLUE = "\u001b[38;5;87m"
@@ -11,7 +13,7 @@ YELLOW = "\u001b[33;1m"
 RESET = "\u001b[0m"
 DISABLED = "\u001b[38;5;237m"
 
-def apply_json_patch(game_root:str, PATH:str, patch_name:str, patch_file:str):
+def apply_json_patch(game_root:str, PATH:str, patch_name:str, patch_file:str, global_patch_apply_func):
 	""" Loads JSON patch rules and applies them """
 
 	print(f"{YELLOW}Loading JSON patch from file {MAGENTA}{patch_name}{RESET}")
@@ -22,11 +24,20 @@ def apply_json_patch(game_root:str, PATH:str, patch_name:str, patch_file:str):
 	PATCH_NAME = patch["patchName"]
 	PATCH_AUTH = patch["patchAuth"]
 	PATCH_DESC = patch["patchDesc"]
+	NEEDS_GLBS = patch["needsGlbs"]
 
 	PATCH_RULES = patch["rules"]
 
 	print(f"{SPECIALDRIVE}Loaded patch: {MAGENTA}{PATCH_NAME}{SPECIALDRIVE} by {YELLOW}{PATCH_AUTH}{RESET}")
 	print(f"{YELLOW}{PATCH_DESC}{RESET}\n")
+
+	if NEEDS_GLBS and not (os.path.exists(f"{game_root}/.jxGlobals")):
+		print(YELLOW + "This patch requires global patches to be installed, but they are not")
+		if questionary.select("Install them now?", choices=["Yes", "No"]).ask() == "Yes":
+			global_patch_apply_func(game_root)
+
+		else:
+			print(YELLOW + "Continuing anyways. Patch may fail!" + RESET)
 
 	# Supported rule types:
 	# REPLACE - replace matched text

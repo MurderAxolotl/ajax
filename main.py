@@ -317,7 +317,7 @@ while True:
 		sys.exit(0)
 
 	if ".json" in _patch:
-		json_patches.apply_json_patch(game_root_directory, PATH, _patch, f"{PATH}/payloads/{_game}/strings/{_patch}")
+		json_patches.apply_json_patch(game_root_directory, PATH, _patch, f"{PATH}/payloads/{_game}/strings/{_patch}", _inject)
 
 	else:
 		_patch = _patch.split(".")[0]
