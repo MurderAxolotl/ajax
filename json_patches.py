@@ -48,7 +48,7 @@ def apply_json_patch(game_root:str, PATH:str, patch_name:str, patch_file:str, gl
 		rule_file = rule["file"]
 		rule_name = rule["ruleName"]
 		rule_type = rule["ruleType"]
-		search    = rule["search"]
+		search    = rule["inject"]
 
 		match rule_type:
 			case "REPLACE":
@@ -79,7 +79,7 @@ def apply_json_patch(game_root:str, PATH:str, patch_name:str, patch_file:str, gl
 					print(f"{RED}Failed to apply rule {MAGENTA}{rule_name}{RED}: {str(err)}{RESET}")
 
 			case "INSERT_AFTER":
-				insert = rule["insert"]
+				insert = rule["inject"]
 
 				print(YELLOW + f"{YELLOW}Applying rule {MAGENTA}{rule_name}{YELLOW} to {DRIVES}{rule_file}{RESET}")
 
@@ -109,7 +109,7 @@ def apply_json_patch(game_root:str, PATH:str, patch_name:str, patch_file:str, gl
 					print(f"{RED}Failed to apply rule {MAGENTA}{rule_name}{RED}: {str(err)}{RESET}")
 
 			case "INSERT_BEFORE":
-				insert = rule["insert"]
+				insert = rule["inject"]
 
 				print(YELLOW + f"{YELLOW}Applying rule {MAGENTA}{rule_name}{YELLOW} to {DRIVES}{rule_file}{RESET}")
 

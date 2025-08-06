@@ -14,6 +14,8 @@ Parasitic plugins are dynamic and can be run at any time in-game. Parasitic has 
 
 Make sure you have the following Python modules installed:
 - questionary (`pip install questionary`)
+- rich (`pip install rich`)
+- unrpa (`pip install unrpa`)
 
 Then, make sure you have the following system packages installed:
 - Python 3 (3.10 minimum, 3.12 recommended)
@@ -22,12 +24,20 @@ Then, make sure you have the following system packages installed:
 Then, you can run these commands to clone and run the code:
 
 ```
-git clone git@github.com:psychon-night/ajax12.git
+git clone git@github.com:psychon-night/ajax.git
 cd ajax12
 python main.py
 ```
 
 It'll ask for your game's directory. Just paste something like `/home/user/Games/renpy-game` and it'll figure the rest out!
+
+### Command Line Arguments
+
+Ajax supports a few command line arguments:
+- `-g "game_folder"` / `--game "game_folder"` - Patch game_folder
+- `-i` / `--ignore_checks` - Ignore sanity checks
+- `-b` / `--backup` - Automatically force a backup
+- `-n` / `--no_backup` - Do not ask abvout backups
 
 ## Accessing Parasitic
 
@@ -76,6 +86,14 @@ Generally, here's the breakdown of the folder structure:
 `/payloads/game_name/strings/` - Despite the name, this is where your actual patches go
 
 ## Making static patches
+
+### JSON Patch Definitions
+
+Refer to [the JSON patch definitions page](https://github.com/psychon-night/ajax/tree/main/docs/json_patch_definitions.md)
+
+### Plugin Scripts
+
+These are Python files called by Ajax. These provide far more flexibility, as *you* write all of the code yourself
 
 1. Following the structure detailed above, create your game's folder
 2. Create a Python file (for example, `cool_patch.py`)

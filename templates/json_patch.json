@@ -10,8 +10,14 @@
 			"ruleName": "Miku is more important",
 			"ruleType": "REPLACE",
 			"search": "I have very important things to say",
-			"replace": "Miku Miku Beam!!",
-			"insert": "Unused in this patch, but yk"
+			"inject": "Miku Miku Beam!!"
+		},
+		{
+			"file": "script_part_2_electric_boogaloo.rpy",
+			"ruleName": "But Teto goes in here",
+			"ruleType": "REPLACE",
+			"search": "Super important presidential speech",
+			"inject": "Kasane Teto is your friend"
 		}
 	]
 }
