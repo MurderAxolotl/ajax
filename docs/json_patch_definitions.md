@@ -4,7 +4,7 @@ JSON patch definitions are the simplier way of creating a patch. They're ideal f
 
 ### Getting Started
 
-To get started, check the [template](https://github.com/psychon-night/ajax12/blob/main/templates/json_patch.json). This shows you all available fields and gives a basic example of how to use it.
+To get started, check the [template](https://github.com/psychon-night/ajax/blob/main/templates/json_patch.json). This shows you all available fields and gives a basic example of how to use it.
 
 Here's a quick breakdown of each key:
 

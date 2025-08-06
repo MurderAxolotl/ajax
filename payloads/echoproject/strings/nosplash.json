@@ -10,7 +10,6 @@
 			"ruleName": "Insert RETURN on SplashScreen",
 			"ruleType": "INSERT_AFTER",
 			"search": "label splashscreen:",
-			"replace": "",
 			"insert": "    return"
 		}
 	]
