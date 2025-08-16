@@ -1,6 +1,6 @@
 init 999 python hide:
    from parasitic_lib import _log
-   config.keymap['toggle_skip'].remove('K_TAB')
-   _log("Rollforward toggle disabled")
+   config.keymap['toggle_skip'] = ["K_c"]
+   _log("Rebound skip toggle to C")
 
    del _log

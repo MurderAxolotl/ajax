@@ -2,13 +2,22 @@ import shutil
 import os
 import sys
 import questionary
-import json
 import time
-import json_patches
 import argparse
+import dotenv
+
+import modules.colour       as colour
+import modules.json_patches as json_patches
 
 from rich.console import Console
-from questionary import Style
+from questionary  import Style
+
+from modules.colour         import RED, YELLOW, SPECIALDRIVE, MAGENTA, RESET
+from modules.global_patches import global_patch_inject
+
+dotenv.load_dotenv(".env")
+
+DEFAULT_DIR = os.getenv("GAME_DIR", "")
 
 PATH = sys.path[0]
 AJVX = "13"
@@ -27,25 +36,6 @@ GAME_OVERRIDE = args.game
 IGNORE_CHECKS = args.ignore_checks
 FORCE_BACKUP  = args.backup
 NO_BACKUP     = args.no_backup
-
-# COLOURS #
-BLUE = "\u001b[38;5;87m"
-DRIVES = "\u001b[1;38;5;202m"
-SPECIALDRIVE = "\u001b[1;38;5;120m"
-SEAFOAM = "\u001b[1;38;5;85m"
-RED = "\u001b[1;31m"
-MAGENTA = "\u001b[1;35m"
-YELLOW = "\u001b[33;1m"
-RESET = "\u001b[0m"
-DISABLED = "\u001b[38;5;237m"
-
-# COLOURS FOR RICH #
-RRED  = "[bold red]"
-RBLUE = "[bold blue]"
-RGREEN = "[bold green]"
-RYELLOW = "[yellow]"
-RPURPLE = "[bold magenta]"
-RRESET = "[/]"
 
 KNOWN_BORKED_WITH_GLOBALS = ["raincheck"]
 
@@ -71,151 +61,8 @@ else:
     ('disabled', 'fg:#858585 italic')   # disabled choices for select and checkbox prompts
 ])
 
-def _inject(root:str):
-	""" Basic injection. No trailing slash """
-
-	if os.path.exists(f"{root}/.jxGlobals") and not IGNORE_CHECKS:
-		print(RED + "Global patches have already been applied. Stop." + RESET)
-		return
-
-	with console.status(f"{RYELLOW}Applying global patches{RRESET}") as global_status:
-		console.log(RYELLOW + "Target path: " + RPURPLE + root)
-
-		# Basic injection does the following things:
-		# - Ensures that all archives are unpacked before the main script is run
-		# - Changes the version information
-		# - Overwrites the license text
-		# - Enables the developer console
-		# - Disables config locking
-
-		# Load developer mode replacement information
-
-		console_definitions = json.load(open(f"{PATH}/payloads/global/match/console.json", "r"))
-		option_definitions  = json.load(open(f"{PATH}/payloads/global/match/options.json", "r"))
-
-		console_file = console_definitions["file"]
-
-		dm_check = console_definitions["searches"][0]
-		dmc_over = console_definitions["replacements"][0]
-		cl_check = console_definitions["searches"][1]
-		clc_over = console_definitions["replacements"][1]
-		license  = console_definitions["searches"][2]
-		nlicense = console_definitions["replacements"][2] % AJVX
-
-		options_file = option_definitions["file"]
-		config_versi = option_definitions["searches"][0]
-		cfg_v_overwr = option_definitions["replacements"][0]
-
-		# Check for RenPy archives first. If they exist,
-		# we can install the mods as an overlay
-
-		if os.path.exists(f"{root}/game/archive.rpa"):
-			USE_OVERLAY = True
-			RPA_NAME    = "archive.rpa"
-
-		elif os.path.exists(f"{root}/game/scripts.rpa"):
-			USE_OVERLAY = True
-			RPA_NAME    = "scripts.rpa"
-
-		else:
-			USE_OVERLAY = False
-			RPA_NAME    = "none"
-
-		if USE_OVERLAY:
-			global_status.update(f"{RYELLOW}Extracting game resources{RRESET}")
-
-			# Extract game resources
-			os.system(f"cd {root}/game/ && unrpa {RPA_NAME} > /dev/null 2> /dev/null")
-
-			console.log(f"{RYELLOW}Extracted game resources{RRESET}")
-
-			# Check if we need to convert the game scripts
-			if not os.path.exists(f"{root}/{options_file}"):
-				global_status.update(f"{RYELLOW}Decompiling script files{RRESET}")
-
-				shutil.copy(f"{PATH}/payloads/global/un.rpy", f"{root}/game/")
-
-				for file in os.listdir(f"{root}"):
-					if ".sh" in file:
-						os.system(f"{root}/{file}")
-
-				os.remove(f"{root}/game/un.rpy")
-				os.remove(f"{root}/game/un.rpyc")
-
-				console.log(f"{RYELLOW}Decompiled script files{RRESET}")
-
-			recoverable_RPA_name = RPA_NAME.split(".")[0]
-			console.log(f"{RYELLOW}Moving {RPA_NAME} to {recoverable_RPA_name}._rpa{RRESET}")
-
-			os.rename(f"{root}/game/{RPA_NAME}", f"{root}/game/{recoverable_RPA_name}._rpa")
-
-
-		# Do annoying partial matches first
-		global_status.update(f"{RYELLOW}Patching {options_file}{RRESET}")
-
-		# Delete rpyc cache files
-		try:
-			os.remove(f"{root}/{options_file}c")
-		except FileNotFoundError:
-			console.log(RRED + f"Cache MISS for {options_file}" + RRESET)
-
-		try:
-			os.remove(f"{root}/{console_file}c")
-
-		except FileNotFoundError:
-			console.log(RRED + f"Cache MISS for {console_file}" + RRESET)
-
-		### Patch options.rpy ###
-		with open(f"{root}/{options_file}", "r+") as rwfile:
-			startup_text_definition = open(f"{PATH}/payloads/global/strings/btext_overlay", "r").read() if USE_OVERLAY else open(f"{PATH}/payloads/global/strings/btext_no_overlay", "r").read()
-
-			original_text = rwfile.read()
-			rwfile.seek(0)
-
-			for line in rwfile.readlines():
-				if config_versi in line:
-					### Change the version ID ###
-
-					config_versi = line
-					game_version = config_versi.split("\"")[1]
-
-					console.log(RYELLOW + f"Detected game version: {game_version}, will overwrite!")
-
-					writeable_string = cfg_v_overwr % f"config.version = \"{game_version}:Ajax\""
-					patchfile_output = original_text.replace(f"config.version = \"{game_version}\"", writeable_string)
-
-					patchfile_output = patchfile_output.replace("init python:", startup_text_definition, 1)
-
-					rwfile.seek(0)
-					rwfile.write(patchfile_output)
-					rwfile.truncate()
-
-		console.log(f"{RYELLOW}Patched {options_file}")
-		global_status.update(f"{RYELLOW}Patching {options_file}{RRESET}")
-
-		with open(f"{root}/{console_file}", "r+") as rwfile:
-			original_text = rwfile.read()
-			rwfile.seek(0)
-
-			# Inject modifications
-			# Developer mode check, unlocks the config file, and overwrites the license
-			working = original_text.replace(dm_check, dmc_over)
-			working = working.replace(cl_check, clc_over)
-			working = working.replace(license, nlicense)
-
-			rwfile.truncate(0)
-			rwfile.write(working)
-
-		try:
-			with open(f"{root}/.jxGlobals", "x") as jxGlobals:
-				jxGlobals.write("Miku Miku BEAAAAAAAAAAAAAAAAAAAAAM-")
-				jxGlobals.flush()
-
-		except FileExistsError:
-			console.log("[bold red underline]Why are you running this with sanity checks disabled?[/]")
-
 def _create_backup(game_root:str):
-	with console.status(f"{RYELLOW}Backing up game"):
+	with console.status(f"{colour.rich.YELLOW}Backing up game"):
 		if not os.path.exists(f"{PATH}/backups"):
 			os.mkdir(f"{PATH}/backups")
 
@@ -226,7 +73,21 @@ def _create_backup(game_root:str):
 
 		shutil.copytree(game_root, f"{PATH}/backups/{backup_folder_path}/")
 
-		console.log(RYELLOW + f"Backup of {RPURPLE}{game_name}{RYELLOW} created ({RGREEN}{backup_folder_path}{RYELLOW})")
+		console.log(colour.rich.YELLOW + f"Backup of {colour.rich.PURPLE}{game_name}{colour.rich.YELLOW} created ({colour.rich.GREEN}{backup_folder_path}{colour.rich.YELLOW})")
+
+def _get_num_backups(game_root:str):
+	if os.path.exists(f"{PATH}/backups"):
+		all_backups = os.listdir(f"{PATH}/backups")
+		gme_backups = []
+		game_name = game_root.split("/")[len(game_root.split("/"))-1]
+
+		for backup in all_backups:
+			if game_name in backup:
+				gme_backups.append(backup)
+
+		return len(gme_backups)
+
+	return 0
 
 def _restore_backup(game_root:str):
 	if os.path.exists(f"{PATH}/backups"):
@@ -246,13 +107,13 @@ def _restore_backup(game_root:str):
 			backup_path = f"{PATH}/backups/{selected_backup}"
 
 			if os.path.exists(f"{backup_path}/game"):
-				with console.status(f"{RYELLOW}Restoring backup"):
+				with console.status(f"{colour.rich.YELLOW}Restoring backup"):
 					try:
 						shutil.rmtree(f"{game_root}/")
 						shutil.copytree(f"{backup_path}", f"{game_root}")
 
 					except Exception as err:
-						console.log(RRED + "Failed to copy backup: " + str(err))
+						console.log(colour.rich.RED + "Failed to copy backup: " + str(err))
 
 			else:
 				print(RED + "This backup is not valid and will not be restored" + RESET)
@@ -265,18 +126,36 @@ def _restore_backup(game_root:str):
 		print(RED + "No backups are available" + RESET)
 		time.sleep(5)
 
-if GAME_OVERRIDE == None:
-	game_root_directory = input(BLUE + "Game root directory (without trailing slash) > " + RESET)
+if GAME_OVERRIDE is None:
+	# game_root_directory = input(BLUE + "Game root directory (without trailing slash) > " + RESET)
+	wd = DEFAULT_DIR if DEFAULT_DIR != "" else os.getcwd()
+	game_root_directory = questionary.path("Game root directory", only_directories=True, default=wd).ask()
 else:
 	game_root_directory = GAME_OVERRIDE
 
+if game_root_directory is None:
+	sys.exit(0)
+
 # Create a backup immediately
 if (not NO_BACKUP) and (not FORCE_BACKUP):
-	backup_action = questionary.select(message="Pre-Run Actions", choices=["Create Backup", "Restore Backup", "Continue"]).ask()
-	if backup_action == "Create Backup":
+	num_backups = _get_num_backups(game_root_directory)
+
+	bops = [
+		questionary.Choice("Create backup", description="Creates a backup of the selected game")
+	]
+
+	if num_backups > 0:
+		bops.append(questionary.Choice("Restore backup", description=f"Restore a backup. {num_backups} backups available"))
+	else:
+		bops.append(questionary.Choice("Restore backup", description="Restore a backup", disabled="No backups exist"))
+
+	bops.append(questionary.Choice("Continue", description="Continue to Ajax"))
+
+	backup_action = questionary.select(message="Backup Manager", choices=bops).ask()
+	if backup_action == "Create backup":
 		_create_backup(game_root_directory)
 
-	elif backup_action == "Restore Backup":
+	elif backup_action == "Restore backup":
 		_restore_backup(game_root_directory)
 
 elif FORCE_BACKUP:
@@ -339,17 +218,21 @@ else:
 
 install_selection = questionary.checkbox("Select components to install", choices=available_for_install, style=CheckboxStyle).ask()
 
+if install_selection is None:
+	sys.exit(0)
+
 if "Global patches" in install_selection:
 	try:
-		_inject(game_root_directory)
+		global_patch_inject(game_root_directory, IGNORE_CHECKS, PATH, AJVX)
 	except Exception as err:
 		print(RED + "Failed to inject global patches: " + str(err) + RESET)
 
 if "Startup tweaks" in install_selection:
 	try:
 		os.mkdir(f"{game_root_directory}/game/startup")
-	except:
-		NotImplemented
+
+	except Exception:
+		NotImplemented #type:ignore
 
 	for startup_plugin in os.listdir(f"{PATH}/payloads/global/plugins_startup"):
 		try:
@@ -363,8 +246,8 @@ if "Parasitic" in install_selection:
 	try:
 		os.mkdir(f"{game_root_directory}/game/plugins/")
 
-	except Exception as err:
-		NotImplemented
+	except Exception:
+		NotImplemented #type:ignore
 
 	if "Parasitic plugins" in install_selection:
 		if FLAG_DEV:
@@ -401,7 +284,7 @@ while True:
 	if _game == "Exit Injector":
 		sys.exit(0)
 
-	_patches = os.listdir(f"{PATH}/payloads/{_game}/strings")
+	_patches = os.listdir(f"{PATH}/payloads/{_game}/patches")
 	_patch_list = []
 
 	for entry in _patches:
@@ -417,7 +300,7 @@ while True:
 			_selectingPatch = False
 
 		elif ".json" in _patch:
-			json_patches.apply_json_patch(game_root_directory, PATH, _patch, f"{PATH}/payloads/{_game}/strings/{_patch}", _inject)
+			json_patches.apply_json_patch(game_root_directory, PATH, _patch, f"{PATH}/payloads/{_game}/patches/{_patch}", global_patch_inject, IGNORE_CHECKS, AJVX)
 			print("")
 
 		else:
@@ -427,7 +310,7 @@ while True:
 				exec(compile(f"import payloads.{_game}.strings.{_patch} as script", "DynamicallyLoadedScript", "exec"))
 
 				try:
-					script._runPatch(game_root_directory)
+					script._runPatch(game_root_directory) #type:ignore
 					print(YELLOW + "Patch finished, no errors were returned" + RESET)
 
 				except Exception as err:

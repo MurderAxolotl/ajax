@@ -31,15 +31,15 @@ pcon = Console(log_time=False, highlight=False)
 
 # Loggin' stuff
 def _log(text:str):
-	pcon.log(f"[bold purple]ParasiticInstaller:[/]INFO {text}")
+	pcon.log(f"[bold purple]ParasiticInstaller:[/]INFO : {text}")
 	# print(f"{PURPLE}[ParasiticInstaller:{RESET}INFO{PURPLE}] {RESET}{text}")
 
 def _warn(text:str):
-	pcon.log(f"[bold purple]ParasiticInstaller:[/][bold yellow]WARN[bold orange] {text}")
+	pcon.log(f"[bold purple]ParasiticInstaller:[/][bold yellow]WARN[bold orange] : {text}")
 	# print(f"{PURPLE}[ParasiticInstaller:{YELLOW}WARN{PURPLE}] {ORANGE}{text}{RESET}")
 
 def _err(text:str):
-	pcon.log(f"[bold purple]ParasiticInstaller:[/][bold red]ERR  {text}")
+	pcon.log(f"[bold purple]ParasiticInstaller:[/][bold red]ERR : {text}")
 	# print(f"{PURPLE}[ParasiticInstaller:{RED}ERR{PURPLE}] {RED}{text}{RESET}")
 
 def _installScript(PATH:str, ROOT:str):
@@ -160,17 +160,73 @@ def _installScript(PATH:str, ROOT:str):
 
 				zzkm_patched = zzkm_read.replace(ZZKM_SEARCH, ZZKM_REPLAC).replace(ZZKM_SEARCH_2, ZZKM_REPLAC_2)
 
-				with open(f"{ROOT}/renpy/common/00keymap.rpy", "w") as len:
-					len.truncate(0)
-					len.seek(0)
+				with open(f"{ROOT}/renpy/common/00keymap.rpy", "w") as leek:
+					leek.truncate(0)
+					leek.seek(0)
 
-					len.write(zzkm_patched)
-					len.flush()
+					leek.write(zzkm_patched)
+					leek.flush()
 
 				_log("Hooked 00keymap.rpy")
 
 			except Exception:
 				_warn("Failed to hook 00keymap.rpy")
+
+			pstatus.update("Hooking script.rpy")
+
+			# try:
+			# 	SEARCH_PATTERN = "label start:"
+			# 	REPLACE_PATTERN = """label start:
+   #  show screen parasitic_input_eater nopredict"""
+
+			# 	if os.path.exists(f"{ROOT}/game/script.rpy"):
+			# 		file_to_write_to = f"{ROOT}/game/script.rpy"
+
+			# 	else:
+			# 		pstatus.update("Searching for start label")
+
+			# 		file_to_write_to = ""
+
+			# 		detected_files = []
+			# 		for root, dirs, files in os.walk(f"{ROOT}/game/"):
+			# 			for name in files:
+			# 				if ".rpy" in name:
+			# 					detected_files.append(os.path.join(root, name))
+
+			# 		for file in detected_files:
+			# 			pstatus.update("Searching for start label (trying " + file.split("/")[len(file.split("/"))-1] + ")")
+
+			# 			try:
+			# 				with open(file, "r") as readfile:
+			# 					if SEARCH_PATTERN in readfile.read():
+			# 						file_to_write_to = file
+			# 						break
+
+			# 			except Exception:
+			# 				NotImplemented
+
+			# 		if file_to_write_to == "":
+			# 			_warn("Failed to find start label!")
+
+			# 		else:
+			# 			pstatus.update("Hooking " + file_to_write_to.split("/")[len(file_to_write_to.split("/"))-1])
+
+			# 			with open(file_to_write_to, "r") as rf:
+			# 				original_file = rf.read()
+
+			# 			patched = original_file.replace(SEARCH_PATTERN, REPLACE_PATTERN)
+
+			# 			with open(file_to_write_to, "w") as wf:
+			# 				wf.truncate(0)
+			# 				wf.seek(0)
+
+			# 				wf.write(patched)
+			# 				wf.flush()
+
+			# 			_log("Hooked start label")
+
+			# except Exception:
+			# 	NotImplemented
 
 			pstatus.update("Cleaning up")
 
