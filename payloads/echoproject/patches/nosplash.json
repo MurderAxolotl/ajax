@@ -1,0 +1,16 @@
+{
+	"patchName": "Remove Splash Screen",
+	"patchAuth": "MurderAxolotl",
+	"patchDesc": "Remove the splash screen from supported games",
+	"needsGlbs": true,
+
+	"rules": [
+		{
+			"file": "script.rpy",
+			"ruleName": "Insert RETURN on SplashScreen",
+			"ruleType": "INSERT_AFTER",
+			"search": "label splashscreen:",
+			"insert": "    return"
+		}
+	]
+}

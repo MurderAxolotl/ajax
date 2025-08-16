@@ -1,0 +1,18 @@
+BLUE = "\u001b[38;5;87m"
+DRIVES = "\u001b[1;38;5;202m"
+SPECIALDRIVE = "\u001b[1;38;5;120m"
+SEAFOAM = "\u001b[1;38;5;85m"
+RED = "\u001b[1;31m"
+MAGENTA = "\u001b[1;35m"
+YELLOW = "\u001b[33;1m"
+RESET = "\u001b[0m"
+DISABLED = "\u001b[38;5;237m"
+
+# Colours for Rich
+class rich:
+	RED  = "[bold red]"
+	BLUE = "[bold blue]"
+	GREEN = "[bold green]"
+	YELLOW = "[yellow]"
+	PURPLE = "[bold magenta]"
+	RESET = "[/]"
